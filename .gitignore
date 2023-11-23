@@ -1,2 +1,7 @@
 /TP/build/
 *.user
+**/build
+**/doc
+**/*.a
+**/*.o
+**/.vscode

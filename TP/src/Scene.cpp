@@ -1,95 +1,117 @@
 #include "Scene.h"
 
 #include <TypedBuffer.h>
-
 #include <iostream>
+#include <queue>
 #include <shader_structs.h>
 
-namespace OM3D {
+namespace OM3D
+{
 
-Scene::Scene() {
-}
+    Scene::Scene()
+    {}
 
-void Scene::add_object(SceneObject obj) {
-    _objects.emplace_back(std::move(obj));
-}
-
-void Scene::add_light(PointLight obj) {
-    _point_lights.emplace_back(std::move(obj));
-}
-
-Span<const SceneObject> Scene::objects() const {
-    return _objects;
-}
-
-Span<const PointLight> Scene::point_lights() const {
-    return _point_lights;
-}
-
-Camera& Scene::camera() {
-    return _camera;
-}
-
-const Camera& Scene::camera() const {
-    return _camera;
-}
-
-void Scene::set_sun(glm::vec3 direction, glm::vec3 color) {
-    _sun_direction = direction;
-    _sun_color = color;
-}
-
-void Scene::render() const {
-    // Fill and bind frame data buffer
-    TypedBuffer<shader::FrameData> buffer(nullptr, 1);
+    void Scene::add_object(SceneObject obj)
     {
-        auto mapping = buffer.map(AccessType::WriteOnly);
-        mapping[0].camera.view_proj = _camera.view_proj_matrix();
-        mapping[0].point_light_count = u32(_point_lights.size());
-        mapping[0].sun_color = _sun_color;
-        mapping[0].sun_dir = glm::normalize(_sun_direction);
-    }
-    buffer.bind(BufferUsage::Uniform, 0);
+        auto ptr = obj.material().get();
 
-    // Fill and bind lights buffer
-    TypedBuffer<shader::PointLight> light_buffer(nullptr, std::max(_point_lights.size(), size_t(1)));
-    {
-        auto mapping = light_buffer.map(AccessType::WriteOnly);
-        for(size_t i = 0; i != _point_lights.size(); ++i) {
-            const auto& light = _point_lights[i];
-            mapping[i] = {
-                light.position(),
-                light.radius(),
-                light.color(),
-                0.0f
-            };
+        auto iter = _objects.find(ptr);
+        if (iter == _objects.end())
+        {
+            std::vector<SceneObject> vec{ std::move(obj) };
+            _objects.emplace(std::make_pair(ptr, vec));
         }
+        else
+            iter->second.emplace_back(std::move(obj));
     }
-    light_buffer.bind(BufferUsage::Storage, 1);
 
-    auto frustum = _camera.build_frustum();
-    glm::vec3 normals[5] = {
-        frustum._top_normal,
-        frustum._bottom_normal,
-        frustum._left_normal,
-        frustum._right_normal,
-        frustum._near_normal,
-    };
-    auto near_dist = _camera.position();
+    void Scene::add_light(PointLight obj)
+    {
+        _point_lights.emplace_back(std::move(obj));
+    }
 
-    for(const SceneObject& obj : _objects) {
-        float radius = obj.get_sphere_radius();
-        bool culled = false;
-        for(const glm::vec3& normal : normals) {
-            glm::vec3 center = obj.transform() * glm::vec4(obj.get_sphere_position(), 1.0f);
-            if (glm::dot(normal, center - near_dist) < -radius) {
-                culled = true;
+    std::size_t Scene::object_count() const
+    {
+        return _objects.size();
+    }
+
+    Span<const PointLight> Scene::point_lights() const
+    {
+        return _point_lights;
+    }
+
+    Camera& Scene::camera()
+    {
+        return _camera;
+    }
+
+    const Camera& Scene::camera() const
+    {
+        return _camera;
+    }
+
+    void Scene::set_sun(glm::vec3 direction, glm::vec3 color)
+    {
+        _sun_direction = direction;
+        _sun_color = color;
+    }
+
+    void Scene::render() const
+    {
+        // Fill and bind frame data buffer
+        TypedBuffer<shader::FrameData> buffer(nullptr, 1);
+        {
+            auto mapping = buffer.map(AccessType::WriteOnly);
+            mapping[0].camera.view_proj = _camera.view_proj_matrix();
+            mapping[0].point_light_count = u32(_point_lights.size());
+            mapping[0].sun_color = _sun_color;
+            mapping[0].sun_dir = glm::normalize(_sun_direction);
+        }
+        buffer.bind(BufferUsage::Uniform, 0);
+
+        // Fill and bind lights buffer
+        TypedBuffer<shader::PointLight> light_buffer(
+            nullptr, std::max(_point_lights.size(), size_t(1)));
+        {
+            auto mapping = light_buffer.map(AccessType::WriteOnly);
+            for (size_t i = 0; i != _point_lights.size(); ++i)
+            {
+                const auto& light = _point_lights[i];
+                mapping[i] = { light.position(), light.radius(), light.color(),
+                               0.0f };
             }
         }
+        light_buffer.bind(BufferUsage::Storage, 1);
 
-        if (!culled)
-            obj.render();
+        auto frustum = _camera.build_frustum();
+        glm::vec3 normals[5] = {
+            frustum._top_normal,   frustum._bottom_normal, frustum._left_normal,
+            frustum._right_normal, frustum._near_normal,
+        };
+        auto near_dist = _camera.position();
+
+        // std::priority_queue<const SceneObject *> q;
+
+        for (const auto& [_, vec] : _objects)
+        {
+            for (const auto& obj : vec)
+            {
+                float radius = obj.get_sphere_radius();
+                bool culled = false;
+                for (const glm::vec3& normal : normals)
+                {
+                    glm::vec3 center = obj.transform()
+                        * glm::vec4(obj.get_sphere_position(), 1.0f);
+                    if (glm::dot(normal, center - near_dist) < -radius)
+                    {
+                        culled = true;
+                    }
+                }
+
+                if (!culled)
+                    obj.render();
+            }
+        }
     }
-}
 
-}
+} // namespace OM3D

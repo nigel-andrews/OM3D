@@ -78,10 +78,11 @@ void Scene::render() const {
     auto near_dist = _camera.position();
 
     for(const SceneObject& obj : _objects) {
+        float radius = obj.get_sphere_radius();
         bool culled = false;
         for(const glm::vec3& normal : normals) {
             glm::vec3 center = obj.transform() * glm::vec4(obj.get_sphere_position(), 1.0f);
-            if (glm::dot(normal, center - near_dist) < 0.0f) {
+            if (glm::dot(normal, center - near_dist) < -radius) {
                 culled = true;
             }
         }

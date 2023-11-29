@@ -2,6 +2,7 @@
 
 #include <TypedBuffer.h>
 
+#include <iostream>
 #include <shader_structs.h>
 
 namespace OM3D {
@@ -66,9 +67,27 @@ void Scene::render() const {
     }
     light_buffer.bind(BufferUsage::Storage, 1);
 
-    // Render every object
+    auto frustum = _camera.build_frustum();
+    glm::vec3 normals[5] = {
+        frustum._top_normal,
+        frustum._bottom_normal,
+        frustum._left_normal,
+        frustum._right_normal,
+        frustum._near_normal,
+    };
+    auto near_dist = _camera.position();
+
     for(const SceneObject& obj : _objects) {
-        obj.render();
+        bool culled = false;
+        for(const glm::vec3& normal : normals) {
+            glm::vec3 center = obj.transform() * glm::vec4(obj.get_sphere_position(), 1.0f);
+            if (glm::dot(normal, center - near_dist) < 0.0f) {
+                culled = true;
+            }
+        }
+
+        if (!culled)
+            obj.render();
     }
 }
 

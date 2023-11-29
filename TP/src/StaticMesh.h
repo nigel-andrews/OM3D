@@ -31,6 +31,10 @@ class StaticMesh : NonCopyable {
 
         StaticMesh(const MeshData& data);
 
+        const BoundingSphere& get_bounding_sphere() const {
+            return _bounding_sphere;
+        }
+
         void draw() const;
 
     private:

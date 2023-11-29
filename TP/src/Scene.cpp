@@ -90,10 +90,10 @@ namespace OM3D
         };
         auto near_dist = _camera.position();
 
-        // std::priority_queue<const SceneObject *> q;
-
-        for (const auto& [_, vec] : _objects)
+        for (const auto& [mat, vec] : _objects)
         {
+            mat->bind();
+
             for (const auto& obj : vec)
             {
                 float radius = obj.get_sphere_radius();

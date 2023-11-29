@@ -19,7 +19,7 @@ namespace OM3D
         }
 
         _material->set_uniform(HASH("model"), transform());
-        _material->bind();
+        // _material->bind();
         _mesh->draw();
     }
 

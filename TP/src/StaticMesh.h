@@ -9,6 +9,14 @@
 
 namespace OM3D {
 
+struct BoundingSphere {
+    glm::vec3 _center;
+    float _radius;
+    
+    BoundingSphere() = default;
+    BoundingSphere(const glm::vec3 &center, float radius);
+};
+
 struct MeshData {
     std::vector<Vertex> vertices;
     std::vector<u32> indices;
@@ -28,6 +36,7 @@ class StaticMesh : NonCopyable {
     private:
         TypedBuffer<Vertex> _vertex_buffer;
         TypedBuffer<u32> _index_buffer;
+        BoundingSphere _bounding_sphere;
 };
 
 }

@@ -10,6 +10,7 @@ else()
     set(COMPILE_OPTIONS -pedantic -Wall -Wextra ${EXTRA_WARNINGS})
 endif()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # setup external libraries
 add_subdirectory(external/glfw)

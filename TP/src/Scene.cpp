@@ -1,9 +1,12 @@
 #include "Scene.h"
 
+#include <vector>
 #include <TypedBuffer.h>
 #include <iostream>
 #include <queue>
 #include <shader_structs.h>
+
+#define NB_OBJECTS 28
 
 namespace OM3D
 {
@@ -90,9 +93,11 @@ namespace OM3D
         };
         auto near_dist = _camera.position();
 
+        // FIXME: Find a way to avoid copying the objects
+        std::vector<glm::mat4> to_display;
+
         for (const auto& [mat, vec] : _objects)
         {
-            mat->bind();
 
             for (const auto& obj : vec)
             {
@@ -109,7 +114,17 @@ namespace OM3D
                 }
 
                 if (!culled)
-                    obj.render();
+                {
+                    to_display.push_back(obj.transform());
+                    // obj.render();
+                }
+            }
+
+            if (to_display.size()) {
+                TypedBuffer<glm::mat4> transforms{to_display.data(), to_display.size()};
+                mat->bind();
+                vec[0].render_batch(transforms);
+                to_display.clear();
             }
         }
     }

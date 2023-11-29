@@ -132,9 +132,7 @@ namespace OM3D
     {
         _vertex_buffer.bind(BufferUsage::Attribute);
         _index_buffer.bind(BufferUsage::Index);
-
         transforms.bind(BufferUsage::Storage);
-        // auto id = transforms.
 
         // Vertex position
         glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Vertex), nullptr);
@@ -151,11 +149,26 @@ namespace OM3D
         glVertexAttribPointer(4, 3, GL_FLOAT, false, sizeof(Vertex),
                               reinterpret_cast<void*>(12 * sizeof(float)));
 
+        glVertexAttribPointer(5, 4, GL_FLOAT, false, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 0));
+        glVertexAttribPointer(6, 4, GL_FLOAT, false, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 4));
+        glVertexAttribPointer(7, 4, GL_FLOAT, false, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 8));
+        glVertexAttribPointer(8, 4, GL_FLOAT, false, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * 12));
+
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
         glEnableVertexAttribArray(3);
         glEnableVertexAttribArray(4);
+        glEnableVertexAttribArray(4);
+        glEnableVertexAttribArray(5);
+        glEnableVertexAttribArray(6);
+        glEnableVertexAttribArray(7);
+        glEnableVertexAttribArray(8);
+
+        glVertexAttribDivisor(5, 1);
+        glVertexAttribDivisor(6, 1);
+        glVertexAttribDivisor(7, 1);
+        glVertexAttribDivisor(8, 1);
 
         if (audit_bindings_before_draw)
         {
@@ -168,7 +181,7 @@ namespace OM3D
 
         glDrawElementsInstanced(
             GL_TRIANGLES, int(_index_buffer.element_count()), GL_UNSIGNED_INT,
-            nullptr, _index_buffer.element_count());
+            nullptr, transforms.element_count());
 
         glDisable(GL_CULL_FACE);
     }

@@ -16,6 +16,7 @@ namespace OM3D
                     std::shared_ptr<Material> material = nullptr);
 
         void render() const;
+        void render_batch(const TypedBuffer<glm::mat4>& transforms) const;
 
         void set_transform(const glm::mat4& tr);
         const glm::mat4& transform() const;

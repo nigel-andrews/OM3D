@@ -17,10 +17,18 @@ namespace OM3D
         {
             return;
         }
-
-        _material->set_uniform(HASH("model"), transform());
-        // _material->bind();
         _mesh->draw();
+    }
+
+    // FIXME: This should not be a member function, but a free function or a static member function.
+    void SceneObject::render_batch(const TypedBuffer<glm::mat4>& transforms) const
+    {
+        if (!_material || !_mesh)
+        {
+            return;
+        }
+
+        _mesh->draw_batch(transforms);
     }
 
     void SceneObject::set_transform(const glm::mat4& tr)

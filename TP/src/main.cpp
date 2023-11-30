@@ -177,6 +177,12 @@ void gui(ImGuiRenderer& imgui)
                 imgui.debug_mode = DebugMode::NORMALS;
             }
 
+            if (ImGui::MenuItem("Depth"))
+            {
+                std::cerr << "Depth debug mode selected" << std::endl;
+                imgui.debug_mode = DebugMode::DEPTH;
+            }
+
             ImGui::EndMenu();
         }
 
@@ -418,10 +424,10 @@ int main(int argc, char** argv)
             debug_program->bind();
             renderer.albedo_texture.bind(0);
             renderer.normal_texture.bind(1);
+            renderer.depth_texture.bind(2);
             debug_program->set_uniform(HASH("in_debug_mode"),
                                        u32(imgui.debug_mode));
 
-            std::cerr << "Debug mode: " << std::dec << u32(imgui.debug_mode) << std::endl;
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
 

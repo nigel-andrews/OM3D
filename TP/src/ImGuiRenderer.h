@@ -21,6 +21,7 @@ class ImGuiRenderer : NonMovable {
             NONE = 0,
             ALBEDO = 1,
             NORMALS = 2,
+            DEPTH = 3,
         } debug_mode = DebugMode::NONE;
 
     private:

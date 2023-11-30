@@ -7,7 +7,6 @@ layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_tangent_bitangent_sign;
 layout(location = 4) in vec3 in_color;
-layout(location = 5) in mat4 model;
 
 layout(location = 0) out vec3 out_normal;
 layout(location = 1) out vec2 out_uv;
@@ -20,11 +19,18 @@ layout(binding = 0) uniform Data {
     FrameData frame;
 };
 
-void main() {
-    const vec4 position = model * vec4(in_pos, 1.0);
+layout(std430, binding = 5) buffer modelBuffer
+{
+    mat4 model[];
+};
 
-    out_normal = normalize(mat3(model) * in_normal);
-    out_tangent = normalize(mat3(model) * in_tangent_bitangent_sign.xyz);
+void main() {
+    mat4 iModel = model[gl_InstanceID];
+    
+    const vec4 position = iModel * vec4(in_pos, 1.0);
+
+    out_normal = normalize(mat3(iModel) * in_normal);
+    out_tangent = normalize(mat3(iModel) * in_tangent_bitangent_sign.xyz);
     out_bitangent = cross(out_tangent, out_normal) * (in_tangent_bitangent_sign.w > 0.0 ? 1.0 : -1.0);
 
     out_uv = in_uv;

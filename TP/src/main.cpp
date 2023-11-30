@@ -279,12 +279,18 @@ struct RendererState
         if (state.size.x > 0 && state.size.y > 0)
         {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
-            state.lit_hdr_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
-            state.tone_mapped_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            // state.lit_hdr_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
+            // state.tone_mapped_texture = Texture(size,
+            // ImageFormat::RGBA8_UNORM); state.main_framebuffer = Framebuffer(
+            //     &state.depth_texture, std::array{ &state.lit_hdr_texture });
+            // state.tone_map_framebuffer =
+            //     Framebuffer(nullptr, std::array{ &state.tone_mapped_texture
+            //     });
+            state.albedo_texture = Texture(size, ImageFormat::RGBA8_sRGB);
+            state.normal_texture = Texture(size, ImageFormat::RGBA8_UNORM);
             state.main_framebuffer = Framebuffer(
-                &state.depth_texture, std::array{ &state.lit_hdr_texture });
-            state.tone_map_framebuffer =
-                Framebuffer(nullptr, std::array{ &state.tone_mapped_texture });
+                &state.depth_texture,
+                std::array{ &state.albedo_texture, &state.normal_texture });
         }
 
         return state;
@@ -293,11 +299,13 @@ struct RendererState
     glm::uvec2 size = {};
 
     Texture depth_texture;
-    Texture lit_hdr_texture;
-    Texture tone_mapped_texture;
+    // Texture lit_hdr_texture;
+    Texture albedo_texture;
+    Texture normal_texture;
+    // Texture tone_mapped_texture;
 
     Framebuffer main_framebuffer;
-    Framebuffer tone_map_framebuffer;
+    // Framebuffer tone_map_framebuffer;
 };
 
 int main(int argc, char** argv)
@@ -329,7 +337,9 @@ int main(int argc, char** argv)
 
     scene = create_default_scene();
 
-    auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
+    // auto tonemap_program = Program::from_files("tonemap.frag",
+    // "screen.vert");
+    auto debug_program = Program::from_files("debug.frag", "screen.vert");
     RendererState renderer;
 
     for (;;)
@@ -366,18 +376,26 @@ int main(int argc, char** argv)
             scene->render();
         }
 
-        // Apply a tonemap in compute shader
+        // // Apply a tonemap in compute shader
+        // {
+        //     renderer.tone_map_framebuffer.bind();
+        //     tonemap_program->bind();
+        //     tonemap_program->set_uniform(HASH("exposure"), exposure);
+        //     renderer.lit_hdr_texture.bind(0);
+        //     glDrawArrays(GL_TRIANGLES, 0, 3);
+        // }
+
+        // // Blit tonemap result to screen
+        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // renderer.tone_map_framebuffer.blit();
+
         {
-            renderer.tone_map_framebuffer.bind();
-            tonemap_program->bind();
-            tonemap_program->set_uniform(HASH("exposure"), exposure);
-            renderer.lit_hdr_texture.bind(0);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            debug_program->bind();
+            renderer.albedo_texture.bind(0);
+            renderer.normal_texture.bind(1);
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
-
-        // Blit tonemap result to screen
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        renderer.tone_map_framebuffer.blit();
 
         gui(imgui);
 

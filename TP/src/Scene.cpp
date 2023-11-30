@@ -11,6 +11,15 @@
 namespace OM3D
 {
 
+    namespace
+    {
+        auto max3(const glm::vec3& a) -> float
+        {
+            return std::max(std::max(a.x, a.y), a.z);
+        } 
+    } // namespace
+    
+
     Scene::Scene()
     {}
 
@@ -107,7 +116,8 @@ namespace OM3D
                 {
                     glm::vec3 center = obj.transform()
                         * glm::vec4(obj.get_sphere_position(), 1.0f);
-                    if (glm::dot(normal, center - near_dist) < -radius)
+                    auto scale = obj.get_transform_components().scale;
+                    if (glm::dot(normal, center - near_dist) < -(radius * max3(scale)))
                     {
                         culled = true;
                     }

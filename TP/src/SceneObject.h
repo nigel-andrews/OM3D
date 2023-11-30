@@ -4,10 +4,19 @@
 #include <Material.h>
 #include <StaticMesh.h>
 #include <glm/matrix.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <memory>
 
 namespace OM3D
 {
+    struct TransformComponents
+    {
+        glm::vec3 position;
+        glm::quat rotation;
+        glm::vec3 scale;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+    };
 
     class SceneObject
     {
@@ -34,6 +43,15 @@ namespace OM3D
         float get_sphere_radius() const
         {
             return _mesh->get_bounding_sphere()._radius;
+        }
+
+        const TransformComponents get_transform_components() const
+        {
+            TransformComponents components;
+            glm::decompose(_transform, components.scale, components.rotation,
+                           components.position, components.skew,
+                           components.perspective);
+            return components;
         }
 
     private:

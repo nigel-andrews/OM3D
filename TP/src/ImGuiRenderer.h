@@ -17,6 +17,12 @@ class ImGuiRenderer : NonMovable {
         void start();
         void finish();
 
+        enum class DebugMode {
+            NONE = 0,
+            ALBEDO = 1,
+            NORMALS = 2,
+        } debug_mode = DebugMode::NONE;
+
     private:
         void render(const ImDrawData* draw_data);
         float update_delta_time();

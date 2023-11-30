@@ -13,6 +13,7 @@
 #include <vector>
 
 using namespace OM3D;
+using DebugMode = ImGuiRenderer::DebugMode;
 
 static float delta_time = 0.0f;
 static std::unique_ptr<Scene> scene;
@@ -153,6 +154,29 @@ void gui(ImGuiRenderer& imgui)
             {
                 exposure = 1.0f;
             }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Debug"))
+        {
+            if (ImGui::MenuItem("None"))
+            {
+                std::cerr << "No debug mode selected" << std::endl;
+                imgui.debug_mode = DebugMode::NONE;
+            }
+
+            if (ImGui::MenuItem("Albedo"))
+            {
+                std::cerr << "Albedo debug mode selected" << std::endl;
+                imgui.debug_mode = DebugMode::ALBEDO;
+            }
+
+            if (ImGui::MenuItem("Normals"))
+            {
+                std::cerr << "Normals debug mode selected" << std::endl;
+                imgui.debug_mode = DebugMode::NORMALS;
+            }
+
             ImGui::EndMenu();
         }
 
@@ -394,6 +418,10 @@ int main(int argc, char** argv)
             debug_program->bind();
             renderer.albedo_texture.bind(0);
             renderer.normal_texture.bind(1);
+            debug_program->set_uniform(HASH("in_debug_mode"),
+                                       u32(imgui.debug_mode));
+
+            std::cerr << "Debug mode: " << std::dec << u32(imgui.debug_mode) << std::endl;
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
 

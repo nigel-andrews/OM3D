@@ -26,7 +26,7 @@ void main() {
         out_color = texelFetch(in_normal, coord, 0);
         break;
     case DEPTH:
-        out_color = pow(texelFetch(in_depth, coord, 0), vec4(0.35));
+        out_color = vec4(pow(texelFetch(in_depth, coord, 0).r, 0.35));
         break;
     default:
         out_color = texelFetch(in_albedo, coord, 0);

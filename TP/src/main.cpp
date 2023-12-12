@@ -445,9 +445,11 @@ int main(int argc, char** argv)
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
 
+        gui(imgui);
+
         // Deferred pass
         {
-            renderer.sun_pass_framebuffer.bind();
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
             sun_program->bind();
             renderer.albedo_texture.bind(0);
             renderer.normal_texture.bind(1);
@@ -459,8 +461,6 @@ int main(int argc, char** argv)
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
-
-        gui(imgui);
 
         glfwSwapBuffers(window);
     }

@@ -382,6 +382,7 @@ int main(int argc, char** argv)
     // auto tonemap_program = Program::from_files("tonemap.frag",
     // "screen.vert");
     auto debug_program = Program::from_files("debug.frag", "screen.vert");
+    auto sun_program = Program::from_files("sun.frag", "screen.vert");
     RendererState renderer;
 
     for (;;)
@@ -431,6 +432,7 @@ int main(int argc, char** argv)
         // glBindFramebuffer(GL_FRAMEBUFFER, 0);
         // renderer.tone_map_framebuffer.blit();
 
+        // Geometry pass
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             debug_program->bind();
@@ -439,6 +441,21 @@ int main(int argc, char** argv)
             renderer.depth_texture.bind(2);
             debug_program->set_uniform(HASH("in_debug_mode"),
                                        u32(imgui.debug_mode));
+
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+        }
+
+        // Deferred pass
+        {
+            renderer.sun_pass_framebuffer.bind();
+            sun_program->bind();
+            renderer.albedo_texture.bind(0);
+            renderer.normal_texture.bind(1);
+            renderer.depth_texture.bind(2);
+
+            sun_program->set_uniform(HASH("uSun.direction"), glm::vec3(-1.0f, -1.0f, -1.0f));
+            sun_program->set_uniform(HASH("uSun.intensity"), 1.0f);
+            sun_program->set_uniform(HASH("uSun.color"), glm::vec3(1.0f, 1.0f, 1.0f));
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }

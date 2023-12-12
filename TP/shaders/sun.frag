@@ -15,9 +15,15 @@ layout(binding = 2) uniform sampler2D in_depth;
 layout(location = 0) uniform SunLight uSun;
 // layout(binding = 2) uniform sampler2D in_depth; // Is this useful ??
 
+float cdot(vec3 lhs, vec3 rhs)
+{
+    return max(dot(lhs, rhs), 0.0);
+}
+
 void main() {
     const ivec2 coord = ivec2(gl_FragCoord.xy);
     vec3 normalFetched = texelFetch(in_normal, coord, 0).xyz;
     vec4 albedoFetched = texelFetch(in_albedo, coord, 0);
-    out_color = albedoFetched * dot(normalFetched, uSun.direction) * uSun.intensity;
+    vec3 sun_dir_norm = normalize(uSun.direction);
+    out_color = vec4(cdot(normalFetched, -sun_dir_norm));
 }

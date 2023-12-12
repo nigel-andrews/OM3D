@@ -39,24 +39,24 @@ void main() {
     const vec3 normal = in_normal;
 #endif
 
-    vec3 acc = frame.sun_color * max(0.0, dot(frame.sun_dir, normal)) + ambient;
+    // vec3 acc = frame.sun_color * max(0.0, dot(frame.sun_dir, normal)) + ambient;
 
-    for(uint i = 0; i != frame.point_light_count; ++i) {
-        PointLight light = point_lights[i];
-        const vec3 to_light = (light.position - in_position);
-        const float dist = length(to_light);
-        const vec3 light_vec = to_light / dist;
+    // for(uint i = 0; i != frame.point_light_count; ++i) {
+    //     PointLight light = point_lights[i];
+    //     const vec3 to_light = (light.position - in_position);
+    //     const float dist = length(to_light);
+    //     const vec3 light_vec = to_light / dist;
 
-        const float NoL = dot(light_vec, normal);
-        const float att = attenuation(dist, light.radius);
-        if(NoL <= 0.0 || att <= 0.0f) {
-            continue;
-        }
+    //     const float NoL = dot(light_vec, normal);
+    //     const float att = attenuation(dist, light.radius);
+    //     if(NoL <= 0.0 || att <= 0.0f) {
+    //         continue;
+    //     }
 
-        acc += light.color * (NoL * att);
-    }
+    //     acc += light.color * (NoL * att);
+    // }
 
-    out_color = vec4(in_color * acc, 1.0);
+    out_color = vec4(in_color, 1.0);// vec4(in_color * acc, 1.0);
     out_normal = vec4(normal * 0.5 + 0.5, 1.0);
 
 #ifdef TEXTURED

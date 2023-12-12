@@ -318,9 +318,17 @@ struct RendererState
             //     });
             state.albedo_texture = Texture(size, ImageFormat::RGBA8_sRGB);
             state.normal_texture = Texture(size, ImageFormat::RGBA8_UNORM);
-            state.main_framebuffer = Framebuffer(
+            state.geometry_pass_framebuffer = Framebuffer(
                 &state.depth_texture,
                 std::array{ &state.albedo_texture, &state.normal_texture });
+
+            state.sunlit_texture = Texture(size, ImageFormat::RGBA8_sRGB);
+            state.sun_pass_framebuffer = Framebuffer(
+                &state.depth_texture, std::array{ &state.sunlit_texture });
+
+            state.full_lit_texture = Texture(size, ImageFormat::RGBA8_sRGB);
+            state.light_pass_framebuffer = Framebuffer(
+                &state.depth_texture, std::array{ &state.full_lit_texture });
         }
 
         return state;
@@ -332,9 +340,13 @@ struct RendererState
     // Texture lit_hdr_texture;
     Texture albedo_texture;
     Texture normal_texture;
+    Texture sunlit_texture;
+    Texture full_lit_texture;
     // Texture tone_mapped_texture;
 
-    Framebuffer main_framebuffer;
+    Framebuffer geometry_pass_framebuffer;
+    Framebuffer sun_pass_framebuffer;
+    Framebuffer light_pass_framebuffer;
     // Framebuffer tone_map_framebuffer;
 };
 
@@ -402,7 +414,7 @@ int main(int argc, char** argv)
 
         // Render the scene
         {
-            renderer.main_framebuffer.bind();
+            renderer.geometry_pass_framebuffer.bind();
             scene->render();
         }
 

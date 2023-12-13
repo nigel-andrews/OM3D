@@ -18,6 +18,9 @@ using DebugMode = ImGuiRenderer::DebugMode;
 static float delta_time = 0.0f;
 static std::unique_ptr<Scene> scene;
 static float exposure = 1.0;
+static float sun_intensity = 1.0;
+static glm::vec3 sun_color = glm::vec3(1.0f);
+static glm::vec3 sun_direction = glm::vec3(-1.0f, -1.0f, -1.0f);
 static std::vector<std::string> scene_files;
 
 namespace OM3D
@@ -142,6 +145,38 @@ void gui(ImGuiRenderer& imgui)
             if (ImGui::MenuItem("Open Scene"))
             {
                 open_scene_popup = true;
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Sun direction"))
+        {
+            ImGui::DragFloat3("Sun direction", &sun_direction.x, 0.01f, -1.0f,
+                              1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+            if (sun_direction != glm::vec3(-1.0f, -1.0f, -1.0f)
+                && ImGui::Button("Reset"))
+            {
+                sun_direction = glm::vec3(-1.0f, -1.0f, -1.0f);
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Sun color"))
+        {
+            ImGui::ColorEdit3("Sun color", &sun_color.x);
+            if (sun_color != glm::vec3(1.0f) && ImGui::Button("Reset"))
+            {
+                sun_color = glm::vec3(1.0f);
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Sun intensity"))
+        {
+            ImGui::DragFloat("Sun intensity", &sun_intensity, 0.01f, 0.00f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+            if (sun_intensity != 0.0f && ImGui::Button("Reset"))
+            {
+                exposure = 0.0f;
             }
             ImGui::EndMenu();
         }
@@ -415,7 +450,7 @@ int main(int argc, char** argv)
             process_inputs(window, scene->camera());
         }
 
-        // Render the scene
+        // Render the scene (Geometry pass)
         {
             renderer.geometry_pass_framebuffer.bind();
             scene->render();
@@ -434,7 +469,7 @@ int main(int argc, char** argv)
         // glBindFramebuffer(GL_FRAMEBUFFER, 0);
         // renderer.tone_map_framebuffer.blit();
 
-        // Geometry pass
+        // Debug
         if (imgui.debug_mode != DebugMode::NONE)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -457,10 +492,10 @@ int main(int argc, char** argv)
             renderer.depth_texture.bind(2);
 
             sun_program->set_uniform(HASH("uSun.direction"),
-                                     glm::vec3(-1.0f, -1.0f, -1.0f));
-            sun_program->set_uniform(HASH("uSun.intensity"), 1.0f);
+                                     glm::normalize(sun_direction));
+            sun_program->set_uniform(HASH("uSun.intensity"), sun_intensity);
             sun_program->set_uniform(HASH("uSun.color"),
-                                     glm::vec3(1.0f, 1.0f, 1.0f));
+                                     sun_color);
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
 

@@ -25,5 +25,5 @@ void main() {
     vec3 normalFetched = texelFetch(in_normal, coord, 0).xyz;
     vec4 albedoFetched = texelFetch(in_albedo, coord, 0);
     vec3 sun_dir_norm = normalize(uSun.direction);
-    out_color = albedoFetched * vec4(uSun.color * uSun.intensity * max(abs(dot(normalFetched, sun_dir_norm)), 0.), 1.);
+    out_color = albedoFetched * vec4(uSun.color * uSun.intensity * max(dot(normalFetched, -sun_dir_norm), 0.), 1.);
 }

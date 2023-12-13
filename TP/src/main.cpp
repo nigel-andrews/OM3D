@@ -326,7 +326,6 @@ struct RendererState
             state.sun_pass_framebuffer = Framebuffer(&state.depth_texture,
                                                      std::array{
                                                          &state.sunlit_texture,
-                                                         &state.normal_texture,
                                                      });
 
             // state.full_lit_texture = Texture(size, ImageFormat::RGBA8_sRGB);

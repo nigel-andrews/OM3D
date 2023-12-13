@@ -51,12 +51,12 @@ namespace OM3D
             std::cout << "\033[31mMaterial not found\033[0m, adding material "
                       << ptr << " and mesh " << mptr << std::endl;
 
-            std::vector<SceneObject> vec{ std::move(obj) };
+            std::vector<SceneObject> vec{ obj };
 
             std::map<const StaticMesh*, std::vector<SceneObject>> map;
-            map.emplace(std::make_pair(mptr, std::move(vec)));
+            map.emplace(std::make_pair(mptr, vec));
 
-            _objects.emplace(std::make_pair(ptr, std::move(map)));
+            _objects.emplace(std::make_pair(ptr, map));
         }
         // Found
         else
@@ -66,26 +66,27 @@ namespace OM3D
 
             auto& mesh_map = iter->second;
 
-            // As long as it works...
+            // I'd like to compare pointers but for some godforsaken reason
+            // they're always different so this is the best we're getting.
             for (auto& [smptr, vec] : mesh_map)
             {
-                if (!smptr->vertices().is_equal(obj.mesh()->vertices()))
+                if (!smptr->vertices().is_equal(mptr->vertices()))
                     continue;
 
                 std::cout << "\033[32mMesh found (" << smptr << ")\033[0m"
                           << std::endl;
 
-                vec.emplace_back(std::move(obj));
+                vec.emplace_back(obj);
 
                 return;
             }
 
             // Not found
-            std::cout << "\033[31mMesh not found\033[0m, adding mesh "
-                      << obj.mesh() << " in " << &mesh_map << std::endl;
+            std::cout << "\033[31mMesh not found\033[0m, adding mesh " << mptr
+                      << " in " << &mesh_map << std::endl;
 
-            std::vector<SceneObject> vec{ std::move(obj) };
-            mesh_map.emplace(std::make_pair(mptr, std::move(vec)));
+            std::vector<SceneObject> vec{ obj };
+            mesh_map.emplace(std::make_pair(mptr, vec));
         }
     }
 

@@ -3,8 +3,8 @@
 
 #include <Material.h>
 #include <StaticMesh.h>
-#include <glm/matrix.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/matrix.hpp>
 #include <memory>
 
 namespace OM3D
@@ -33,6 +33,11 @@ namespace OM3D
         const std::shared_ptr<Material> material() const
         {
             return _material;
+        }
+
+        const std::shared_ptr<StaticMesh> mesh() const
+        {
+            return _mesh;
         }
 
         const glm::vec3 get_sphere_position() const

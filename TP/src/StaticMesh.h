@@ -39,6 +39,11 @@ namespace OM3D
             return _bounding_sphere;
         }
 
+        const TypedBuffer<Vertex>& vertices() const
+        {
+            return _vertex_buffer;
+        }
+
         void draw() const;
         void draw_batch(const TypedBuffer<glm::mat4>& transforms) const;
 

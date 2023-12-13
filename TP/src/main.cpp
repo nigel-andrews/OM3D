@@ -323,12 +323,15 @@ struct RendererState
                 std::array{ &state.albedo_texture, &state.normal_texture });
 
             state.sunlit_texture = Texture(size, ImageFormat::RGBA8_sRGB);
-            state.sun_pass_framebuffer = Framebuffer(
-                &state.depth_texture, std::array{ &state.sunlit_texture });
+            state.sun_pass_framebuffer = Framebuffer(&state.depth_texture,
+                                                     std::array{
+                                                         &state.sunlit_texture,
+                                                         &state.normal_texture,
+                                                     });
 
-            state.full_lit_texture = Texture(size, ImageFormat::RGBA8_sRGB);
-            state.light_pass_framebuffer = Framebuffer(
-                &state.depth_texture, std::array{ &state.full_lit_texture });
+            // state.full_lit_texture = Texture(size, ImageFormat::RGBA8_sRGB);
+            // state.light_pass_framebuffer = Framebuffer(
+            //     &state.depth_texture, std::array{ &state.full_lit_texture });
         }
 
         return state;
@@ -341,12 +344,12 @@ struct RendererState
     Texture albedo_texture;
     Texture normal_texture;
     Texture sunlit_texture;
-    Texture full_lit_texture;
+    // Texture full_lit_texture;
     // Texture tone_mapped_texture;
 
     Framebuffer geometry_pass_framebuffer;
     Framebuffer sun_pass_framebuffer;
-    Framebuffer light_pass_framebuffer;
+    // Framebuffer light_pass_framebuffer;
     // Framebuffer tone_map_framebuffer;
 };
 
@@ -453,15 +456,18 @@ int main(int argc, char** argv)
             renderer.normal_texture.bind(1);
             renderer.depth_texture.bind(2);
 
-            sun_program->set_uniform(HASH("uSun.direction"), glm::vec3(-1.0f, -1.0f, -1.0f));
+            sun_program->set_uniform(HASH("uSun.direction"),
+                                     glm::vec3(-1.0f, -1.0f, -1.0f));
             sun_program->set_uniform(HASH("uSun.intensity"), 1.0f);
-            sun_program->set_uniform(HASH("uSun.color"), glm::vec3(1.0f, 1.0f, 1.0f));
+            sun_program->set_uniform(HASH("uSun.color"),
+                                     glm::vec3(1.0f, 1.0f, 1.0f));
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
+
+            renderer.sun_pass_framebuffer.blit(false);
         }
 
         gui(imgui);
-
 
         glfwSwapBuffers(window);
     }

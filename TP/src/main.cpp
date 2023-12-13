@@ -433,6 +433,7 @@ int main(int argc, char** argv)
         // renderer.tone_map_framebuffer.blit();
 
         // Geometry pass
+        if (imgui.debug_mode != DebugMode::NONE)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             debug_program->bind();
@@ -444,10 +445,7 @@ int main(int argc, char** argv)
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
-
-        gui(imgui);
-
-        // Deferred pass
+        else // Deferred pass
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             sun_program->bind();
@@ -461,6 +459,9 @@ int main(int argc, char** argv)
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
+
+        gui(imgui);
+
 
         glfwSwapBuffers(window);
     }

@@ -173,7 +173,8 @@ void gui(ImGuiRenderer& imgui)
 
         if (ImGui::BeginMenu("Sun intensity"))
         {
-            ImGui::DragFloat("Sun intensity", &sun_intensity, 0.01f, 0.00f, 1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+            ImGui::DragFloat("Sun intensity", &sun_intensity, 0.01f, 0.00f,
+                             1.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
             if (sun_intensity != 0.0f && ImGui::Button("Reset"))
             {
                 exposure = 0.0f;
@@ -358,14 +359,12 @@ struct RendererState
                 std::array{ &state.albedo_texture, &state.normal_texture });
 
             state.sunlit_texture = Texture(size, ImageFormat::RGBA8_sRGB);
-            state.sun_pass_framebuffer = Framebuffer(&state.depth_texture,
-                                                     std::array{
-                                                         &state.sunlit_texture,
-                                                     });
+            state.sun_pass_framebuffer =
+                Framebuffer(nullptr, std::array{ &state.sunlit_texture });
 
-            // state.full_lit_texture = Texture(size, ImageFormat::RGBA8_sRGB);
-            // state.light_pass_framebuffer = Framebuffer(
-            //     &state.depth_texture, std::array{ &state.full_lit_texture });
+            state.full_lit_texture = Texture(size, ImageFormat::RGBA8_sRGB);
+            state.light_pass_framebuffer = Framebuffer(
+                &state.depth_texture, std::array{ &state.full_lit_texture });
         }
 
         return state;
@@ -378,12 +377,12 @@ struct RendererState
     Texture albedo_texture;
     Texture normal_texture;
     Texture sunlit_texture;
-    // Texture full_lit_texture;
+    Texture full_lit_texture;
     // Texture tone_mapped_texture;
 
     Framebuffer geometry_pass_framebuffer;
     Framebuffer sun_pass_framebuffer;
-    // Framebuffer light_pass_framebuffer;
+    Framebuffer light_pass_framebuffer;
     // Framebuffer tone_map_framebuffer;
 };
 
@@ -484,20 +483,24 @@ int main(int argc, char** argv)
         }
         else // Deferred pass
         {
-            renderer.sun_pass_framebuffer.bind(true);
+            { // Sun pass
+                renderer.sun_pass_framebuffer.bind(true, false);
 
-            sun_program->bind();
-            renderer.albedo_texture.bind(0);
-            renderer.normal_texture.bind(1);
-            renderer.depth_texture.bind(2);
+                sun_program->bind();
+                renderer.albedo_texture.bind(0);
+                renderer.normal_texture.bind(1);
+                renderer.depth_texture.bind(2);
 
-            sun_program->set_uniform(HASH("uSun.direction"),
-                                     glm::normalize(sun_direction));
-            sun_program->set_uniform(HASH("uSun.intensity"), sun_intensity);
-            sun_program->set_uniform(HASH("uSun.color"),
-                                     sun_color);
+                sun_program->set_uniform(HASH("uSun.direction"),
+                                         glm::normalize(sun_direction));
+                sun_program->set_uniform(HASH("uSun.intensity"), sun_intensity);
+                sun_program->set_uniform(HASH("uSun.color"), sun_color);
 
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+                glDrawArrays(GL_TRIANGLES, 0, 3);
+            }
+
+            { // Light pass
+            }
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             renderer.sun_pass_framebuffer.blit(false);
